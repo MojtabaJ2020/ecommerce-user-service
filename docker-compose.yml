@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  config-server:
+    image: mojtaba2422/ecommerce-config-server:latest
+    container_name: ecommerce-user-service
+    ports:
+      - "4000:4000"
+    environment:
+      - EUREKA_SERVER_URL=http://ecommerce-eureka-server:9999/eureka
+      - GOOGLE_CLIENT_ID=your-client-id
+      - GOOGLE_CLIENT_SECRET=your-client-secret
+      - GITHUB_CLIENT_ID=your-client-id
+      - GITHUB_CLIENT_SECRET=your-client-secret
+      - DB_HOST=ecommerce-postgres-server
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+
+    networks:
+      - ecommerce-network
+networks:
+  ecommerce-network:
+    name: ecommerce-network
+    driver: bridge
+    external: true

@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: user-service
+  cloud:
+    discovery:
+      enabled: true
+  config:
+    import: configserver:http://localhost:8888
+    label: master
+    name: user-service
+    fail-fast: true

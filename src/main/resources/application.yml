@@ -5,7 +5,7 @@ spring:
     discovery:
       enabled: true
   config:
-    import: configserver:http://localhost:8888
+    import: ${SPRING_CONFIG_IMPORT:configserver:http://localhost:8888}
     label: master
     name: user-service
     fail-fast: true

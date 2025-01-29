@@ -28,11 +28,12 @@ FROM openjdk:17-jdk-slim AS runtime
 WORKDIR /app
 
 # Copy the Spring Boot jar from the build stage
-COPY --from=build /app/build/libs/config-server-*-SNAPSHOT.jar /app/app.jar
+COPY --from=build /app/build/libs/user-server-*-SNAPSHOT.jar /app/app.jar
 
 # Expose the port your Spring Boot application runs on
 EXPOSE 4000
-
+ENV SPRING_CONFIG_IMPORT=configserver:http://localhost:8888
+ENV EUREKA_SERVER_URL=http://localhost:9999/eureka
 ENV GOOGLE_CLIENT_ID=your-client-id
 ENV GOOGLE_CLIENT_SECRET=your-client-secret
 ENV GITHUB_CLIENT_ID=your-client-id

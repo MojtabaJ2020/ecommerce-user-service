@@ -28,7 +28,7 @@ FROM openjdk:17-jdk-slim AS runtime
 WORKDIR /app
 
 # Copy the Spring Boot jar from the build stage
-COPY --from=build /app/build/libs/user-server-*-SNAPSHOT.jar /app/app.jar
+COPY --from=build /app/build/libs/user-service-*-SNAPSHOT.jar /app/app.jar
 
 # Expose the port your Spring Boot application runs on
 EXPOSE 4000

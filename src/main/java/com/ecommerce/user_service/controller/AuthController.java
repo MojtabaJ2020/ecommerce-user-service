@@ -2,12 +2,17 @@ package com.ecommerce.user_service.controller;
 
 import com.ecommerce.user_service.dto.AuthRequestDTO;
 import com.ecommerce.user_service.dto.JwtTokenDTO;
+import com.ecommerce.user_service.dto.UserDTO;
+import com.ecommerce.user_service.entity.UserEntity;
 import com.ecommerce.user_service.enums.TokenTypeEnum;
 import com.ecommerce.user_service.service.RefreshTokenService;
 import com.ecommerce.user_service.jwt.JwtUtil;
+import com.ecommerce.user_service.service.UserService;
+import com.ecommerce.user_service.util.DTOUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,12 +31,14 @@ import java.util.Optional;
   private final AuthenticationManager authenticationManager;
   private final JwtUtil jwtUtil;
   private final RefreshTokenService refreshTokenService;
+  private final UserService userService;
   
-  public AuthController (AuthenticationManager authenticationManager, JwtUtil jwtUtil, RefreshTokenService refreshTokenService)
+  public AuthController (AuthenticationManager authenticationManager, JwtUtil jwtUtil, RefreshTokenService refreshTokenService, UserService userService)
   {
     this.authenticationManager = authenticationManager;
     this.jwtUtil = jwtUtil;
     this.refreshTokenService = refreshTokenService;
+    this.userService = userService;
   }
   
   @GetMapping ("/login") public String login ()
@@ -78,4 +85,10 @@ import java.util.Optional;
     return ResponseEntity.ok().build();
   }
   
+  @PostMapping("/register")
+  public ResponseEntity<?> registerUser(@RequestBody @Valid UserDTO userDTO)
+  {
+    UserEntity userEntity = this.userService.register (DTOUtil.toEntity (userDTO));
+    return new ResponseEntity <> (DTOUtil.toDTO (userEntity), HttpStatus.CREATED);
+  }
 }

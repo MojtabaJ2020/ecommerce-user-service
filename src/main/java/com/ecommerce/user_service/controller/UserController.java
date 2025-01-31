@@ -24,12 +24,6 @@ public class UserController
     this.userService = userService;
   }
   
-  @PostMapping("/register")
-  public ResponseEntity<?> registerUser(@RequestBody @Valid UserDTO userDTO)
-  {
-    UserEntity userEntity = this.userService.register (DTOUtil.toEntity (userDTO));
-    return new ResponseEntity <> (DTOUtil.toDTO (userEntity), HttpStatus.CREATED);
-  }
   @GetMapping("")
   public ResponseEntity<?> getUsers()
   {

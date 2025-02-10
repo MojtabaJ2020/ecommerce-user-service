@@ -1,8 +1,9 @@
 package com.ecommerce.user_service.jwt;
 
 import com.ecommerce.user_service.enums.TokenTypeEnum;
+import com.ecommerce.user_service.service.JwtService;
 import com.ecommerce.user_service.service.RefreshTokenService;
-import jakarta.servlet.http.Cookie;
+import com.ecommerce.user_service.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,13 +12,13 @@ import java.io.IOException;
 
 public class JwtTokenHandler
 {
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
   
   private final RefreshTokenService refreshTokenService;
   
-  public JwtTokenHandler (JwtUtil jwtUtil, RefreshTokenService refreshTokenService)
+  public JwtTokenHandler (JwtService jwtService, RefreshTokenService refreshTokenService)
   {
-    this.jwtUtil = jwtUtil;
+    this.jwtService = jwtService;
     this.refreshTokenService = refreshTokenService;
   }
   
@@ -25,18 +26,17 @@ public class JwtTokenHandler
   {
     handleAccessToken (request, response, userDetails);
     handleRefreshToken (request, response, userDetails);
-    response.sendRedirect ("/home");
   }
   
   public void handleAccessToken (HttpServletRequest request, HttpServletResponse response, UserDetails userDetails)
   {
-    String accessToken = jwtUtil.generateAccessToken (userDetails);
+    String accessToken = jwtService.generateAccessToken (userDetails);
     injectAccessToken (response, accessToken);
   }
   
   public void handleRefreshToken (HttpServletRequest request, HttpServletResponse response, UserDetails userDetails)
   {
-    String refreshToken = jwtUtil.generateRefreshToken (userDetails);
+    String refreshToken = jwtService.generateRefreshToken (userDetails);
     refreshTokenService.storeRefreshToken (request, userDetails, refreshToken);
     injectRefreshToken (response, refreshToken);
   }
@@ -44,21 +44,12 @@ public class JwtTokenHandler
   protected void injectAccessToken (HttpServletResponse response, String token)
   {
     response.setHeader ("Authorization", "Bearer " + token);
-    response.addCookie (generateCookie (token, TokenTypeEnum.ACCESS_TOKEN));
+    response.addCookie (CookieUtil.generate (token, TokenTypeEnum.ACCESS_TOKEN,Long.valueOf (jwtService.getProperties ().getAccessTokenExpiration ()).intValue ()));
   }
   
   protected void injectRefreshToken (HttpServletResponse response, String token)
   {
     response.setHeader (TokenTypeEnum.REFRESH_TOKEN.toString (), token);
-    response.addCookie (generateCookie (token, TokenTypeEnum.REFRESH_TOKEN));
-  }
-  
-  private Cookie generateCookie (String token, TokenTypeEnum tokenTypeEnum)
-  {
-    Cookie cookie = new Cookie (tokenTypeEnum.toString (), token);
-    cookie.setHttpOnly (true); // Prevent JavaScript access
-    cookie.setSecure (true);  // Set to true if using HTTPS
-    cookie.setPath ("/");  // Make cookie accessible for the entire domain
-    return cookie;
+    response.addCookie (CookieUtil.generate (token, TokenTypeEnum.REFRESH_TOKEN,Long.valueOf (jwtService.getProperties ().getRefreshTokenExpiration ()).intValue ()));
   }
 }

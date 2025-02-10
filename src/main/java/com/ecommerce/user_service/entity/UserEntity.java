@@ -1,10 +1,12 @@
 package com.ecommerce.user_service.entity;
 
+import jakarta.persistence.Basic;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,11 +27,19 @@ import java.util.List;
   
   private String password;
   
+  private boolean enabled;
+  
+  private boolean locked;
+  
+  private boolean pendingActivation;
+  
   private String role;
   
-  @Lob private byte[] picture;
+  @Basic(fetch = FetchType.LAZY)
+  @Column (columnDefinition = "BYTEA")
+  private byte[] picture;
   
   @OneToMany (mappedBy = "userEntity")
-  private List <RefreshTokenEntity> refreshTokenEntityList;
+  private List <RefreshToken> refreshTokenList;
   
 }

@@ -15,4 +15,6 @@ public interface UserService
   
   List <UserEntity> findAll();
   
+  UserEntity update(UserEntity userEntity);
+  
 }

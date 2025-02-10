@@ -1,0 +1,12 @@
+<html>
+<head>
+    <link rel="stylesheet" th:href="@{/css/user-activation-page.css}">
+</head>
+<body>
+<h1 th:text="${message} ?: 'Activation Failed'"></h1>
+
+<a th:href="${send_activation_code_link}" th:text="#{user.click.for.sending.activation.token}"></a>
+<br>
+<a th:href="${login_link}" th:text="#{user.click.for.login}"></a>
+</body>
+</html>

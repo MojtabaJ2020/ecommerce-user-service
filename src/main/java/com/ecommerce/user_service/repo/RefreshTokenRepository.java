@@ -1,12 +1,12 @@
 package com.ecommerce.user_service.repo;
 
-import com.ecommerce.user_service.entity.RefreshTokenEntity;
+import com.ecommerce.user_service.entity.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository public interface RefreshTokenRepository extends JpaRepository <RefreshTokenEntity, Long>
+@Repository public interface RefreshTokenRepository extends JpaRepository <RefreshToken, Long>
 {
-  List <RefreshTokenEntity> findByToken (String token);
+  List <RefreshToken> findByToken (String token);
 }

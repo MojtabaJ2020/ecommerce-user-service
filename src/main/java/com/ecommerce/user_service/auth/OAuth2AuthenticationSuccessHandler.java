@@ -1,9 +1,8 @@
-package com.ecommerce.user_service.oauth;
+package com.ecommerce.user_service.auth;
 
 import com.ecommerce.user_service.entity.UserEntity;
 import com.ecommerce.user_service.enums.RoleEnum;
-import com.ecommerce.user_service.jwt.JwtTokenHandler;
-import com.ecommerce.user_service.jwt.JwtUtil;
+import com.ecommerce.user_service.service.JwtService;
 import com.ecommerce.user_service.service.OAuthEmailService;
 import com.ecommerce.user_service.service.RefreshTokenService;
 import com.ecommerce.user_service.service.UserService;
@@ -18,23 +17,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-@Component public class OAuth2AuthenticationSuccessHandler extends JwtTokenHandler implements AuthenticationSuccessHandler
+@Component public class OAuth2AuthenticationSuccessHandler extends AbstractStatelessAuthenticationSuccessHandler
 {
   @Autowired private OAuthEmailService oAuthEmailService;
   @Autowired private OAuth2AuthorizedClientService authorizedClientService;
   @Autowired private UserService userService;
   @Autowired private PasswordEncoder passwordEncoder;
   
-  public OAuth2AuthenticationSuccessHandler (JwtUtil jwtUtil, RefreshTokenService refreshTokenService)
+  public OAuth2AuthenticationSuccessHandler (JwtService jwtService, RefreshTokenService refreshTokenService)
   {
-    super (jwtUtil, refreshTokenService);
+    super (jwtService, refreshTokenService);
   }
   
   @Override public void onAuthenticationSuccess (HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws
@@ -48,7 +46,7 @@ import java.util.UUID;
                                   .password (userEntity.getPassword ())
                                   .authorities (authToken.getPrincipal ().getAuthorities ())
                                   .build ();
-    onSuccess (request, response, userDetails);
+    onSuccess (request, response, authentication, userDetails);
   }
   
   private UserEntity registerUserOnTheFlyIfNotExist (UserEntity userEntity)

@@ -1,11 +1,14 @@
 package com.ecommerce.user_service.config;
 
+import com.ecommerce.user_service.auth.OAuth2AuthenticationSuccessHandler;
+import com.ecommerce.user_service.auth.StandardAuthenticationSuccessHandler;
 import com.ecommerce.user_service.enums.TokenTypeEnum;
 import com.ecommerce.user_service.jwt.JwtAuthenticationEntryPoint;
 import com.ecommerce.user_service.jwt.JwtAuthenticationFilter;
-import com.ecommerce.user_service.jwt.JwtUtil;
-import com.ecommerce.user_service.oauth.OAuth2AuthenticationSuccessHandler;
+import com.ecommerce.user_service.service.JwtService;
 import com.ecommerce.user_service.property.JwtProperties;
+import com.ecommerce.user_service.property.RedirectUrlProperties;
+import com.ecommerce.user_service.property.SecurityProperties;
 import com.ecommerce.user_service.service.RefreshTokenService;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.context.annotation.Bean;
@@ -21,11 +24,11 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.crypto.SecretKey;
@@ -35,33 +38,52 @@ import java.nio.charset.StandardCharsets;
 {
   private final UserDetailsService userDetailsService;
   private final RefreshTokenService refreshTokenService;
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
   private final JwtProperties jwtProperties;
+  private final SecurityProperties securityProperties;
+  private final RedirectUrlProperties redirectUrlProperties;
+  private final PasswordEncoder passwordEncoder;
   
-  public SecurityConfig (UserDetailsService userDetailsService, RefreshTokenService refreshTokenService, JwtUtil jwtUtil, JwtProperties jwtProperties)
+  public SecurityConfig (UserDetailsService userDetailsService,
+                         RefreshTokenService refreshTokenService,
+                         JwtService jwtService,
+                         JwtProperties jwtProperties,
+                         SecurityProperties securityProperties,
+                         RedirectUrlProperties redirectUrlProperties,
+                         PasswordEncoder passwordEncoder)
   {
     this.userDetailsService = userDetailsService;
     this.refreshTokenService = refreshTokenService;
-    this.jwtUtil = jwtUtil;
+    this.jwtService = jwtService;
     this.jwtProperties = jwtProperties;
+    this.securityProperties = securityProperties;
+    this.redirectUrlProperties = redirectUrlProperties;
+    this.passwordEncoder = passwordEncoder;
   }
   
   @Bean public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception
   {
     http.csrf (AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests (auth -> auth.requestMatchers ("/api/**").authenticated ().anyRequest ().permitAll ())
+        .authorizeHttpRequests (auth -> auth.requestMatchers (securityProperties.getWhitelistedEndpoints ().toArray (new String[0]))
+                                            .permitAll ()
+                                            .anyRequest ()
+                                            .authenticated ())
         
-        .oauth2Login (oauth2 -> oauth2.loginPage ("/login")  // Use custom login page
-                                      .defaultSuccessUrl ("/home", true).successHandler (oAuth2AuthenticationSuccessHandler ()))
+        // add oauth2.loginPage ("/login-basic") for using backend custom login page
+        .oauth2Login (oauth2 -> oauth2.successHandler (oAuth2AuthenticationSuccessHandler ()).failureHandler (authenticationFailureHandler ()))
         
         .httpBasic (Customizer.withDefaults ())
-        .formLogin (form -> form.loginPage ("/login").successHandler (standardAuthenticationSuccessHandler ()))
+        
+        // Enable following line for using backend custom login page
+        //        .formLogin (form -> form.loginPage ("/login-basic")
+        //                                .successHandler (standardAuthenticationSuccessHandler ())
+        //                                .failureHandler (authenticationFailureHandler ()))
+        
         .authenticationProvider (authenticationProvider ())
         .addFilterBefore (jwtRequestFilter (), UsernamePasswordAuthenticationFilter.class)
-        //        .oauth2ResourceServer (oauth2 -> oauth2.jwt (Customizer.withDefaults ()))
         .sessionManagement (session -> session.sessionCreationPolicy (SessionCreationPolicy.STATELESS))
         .exceptionHandling (exceptionHandling -> exceptionHandling.authenticationEntryPoint (jwtAuthenticationEntryPoint ()))
-        .logout ((logout) -> logout.deleteCookies (TokenTypeEnum.ACCESS_TOKEN.toString ())
+        .logout ((logout) -> logout.deleteCookies (TokenTypeEnum.ACCESS_TOKEN.toString (),TokenTypeEnum.REFRESH_TOKEN.toString ())
                                    .invalidateHttpSession (true)
                                    .logoutUrl ("/logout")
                                    .logoutSuccessUrl ("/login"));
@@ -74,24 +96,28 @@ import java.nio.charset.StandardCharsets;
     return NimbusJwtDecoder.withSecretKey (key).build ();
   }
   
-  @Bean public PasswordEncoder passwordEncoder ()
-  {
-    return new BCryptPasswordEncoder ();
-  }
-  
   @Bean public StandardAuthenticationSuccessHandler standardAuthenticationSuccessHandler ()
   {
-    return new StandardAuthenticationSuccessHandler (jwtUtil, refreshTokenService);
+    StandardAuthenticationSuccessHandler successHandler = new StandardAuthenticationSuccessHandler (jwtService, refreshTokenService);
+    successHandler.setDefaultTargetUrl (redirectUrlProperties.getAfterSuccessLogin ());
+    return successHandler;
   }
   
   @Bean public OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler ()
   {
-    return new OAuth2AuthenticationSuccessHandler (jwtUtil, refreshTokenService);
+    OAuth2AuthenticationSuccessHandler successHandler = new OAuth2AuthenticationSuccessHandler (jwtService, refreshTokenService);
+    successHandler.setDefaultTargetUrl (redirectUrlProperties.getAfterSuccessLogin ());
+    return successHandler;
+  }
+  
+  @Bean public SimpleUrlAuthenticationFailureHandler authenticationFailureHandler ()
+  {
+    return new SimpleUrlAuthenticationFailureHandler (redirectUrlProperties.getAfterFailureLogin ());
   }
   
   @Bean public AuthenticationProvider authenticationProvider ()
   {
-    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider (passwordEncoder ());
+    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider (passwordEncoder);
     authenticationProvider.setUserDetailsService (userDetailsService);
     authenticationProvider.setAuthoritiesMapper (new SimpleAuthorityMapper ());
     return authenticationProvider;
@@ -104,7 +130,7 @@ import java.nio.charset.StandardCharsets;
   
   @Bean public JwtAuthenticationFilter jwtRequestFilter ()
   {
-    return new JwtAuthenticationFilter (userDetailsService, jwtUtil);
+    return new JwtAuthenticationFilter (userDetailsService, jwtService);
   }
   
   @Bean public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint ()

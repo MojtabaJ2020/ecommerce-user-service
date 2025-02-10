@@ -12,22 +12,20 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 public class UserDTO
 {
-  private UserDTO()
-  {
-  }
-  @NotNull(message = "Name can not be null!")
-  @Size (min = 3, max = 64, message = "Name must be between 3 and 64 characters!")
+  @NotNull(message = "user.name.not.null")
+  @Size (min = 3, max = 64, message = "user.name.not.allowed.size")
   private String name;
   
-  @NotNull(message = "Email can not be null!")
+  @NotNull(message = "user.email.not.null")
+  @Size (min = 3, max = 255, message = "user.email.not.allowed.size")
   private String email;
   
-  @NotNull(message = "Password can not be null!")
-  @Size (min = 3, max = 64, message = "Password must be between 3 and 64 characters!")
+  @NotNull(message = "user.password.not.null")
+  @Size (min = 3, max = 64, message = "user.password.not.allowed.size")
   private String password;
   
-  @NotNull(message = "Role can not be null!")
-  @Size (min = 3, max = 64, message = "Role must be between 3 and 64 characters!")
+  @NotNull(message = "user.role.not.null")
+  @Size (min = 3, max = 64, message = "user.role.not.allowed.size")
   private String role;
   
   private MultipartFile picture;

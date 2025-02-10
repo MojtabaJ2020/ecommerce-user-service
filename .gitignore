@@ -21,6 +21,7 @@ bin/
 .idea
 *.iws
 *.env
+.env
 *.iml
 *.ipr
 out/

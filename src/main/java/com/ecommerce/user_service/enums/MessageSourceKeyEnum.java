@@ -1,0 +1,15 @@
+package com.ecommerce.user_service.enums;
+
+public enum MessageSourceKeyEnum
+{
+//  SUCCESS_USER_REGISTRATION,
+//
+//  SUCCESS_USER_ACTIVATION,
+//
+//  SUCCESS_SENDING_ACTIVATION_TOKEN,
+//
+//  INVALID_USER_ACTIVATION_TOKEN,
+//
+//  EXPIRED_USER_ACTIVATION_TOKEN,
+//  INFO_ACTIVATION_TOKEN,
+}

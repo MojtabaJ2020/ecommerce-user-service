@@ -1,6 +1,7 @@
 package com.ecommerce.user_service.jwt;
 
 import com.ecommerce.user_service.enums.TokenTypeEnum;
+import com.ecommerce.user_service.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -20,14 +21,14 @@ import java.io.IOException;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter
 {
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
   private final Logger logger = LoggerFactory.getLogger (JwtAuthenticationFilter.class);
   
-  public JwtAuthenticationFilter (UserDetailsService userDetailsService, JwtUtil jwtUtil)
+  public JwtAuthenticationFilter (UserDetailsService userDetailsService, JwtService jwtService)
   {
     this.userDetailsService = userDetailsService;
-    this.jwtUtil = jwtUtil;
+    this.jwtService = jwtService;
   }
   
   @Override protected void doFilterInternal (HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws
@@ -42,9 +43,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
     }
     if (jwtAccessToken != null)
     {
-      if (jwtUtil.validateToken (jwtAccessToken))
+      if (jwtService.isTokenValid (jwtAccessToken))
       {
-        String username = jwtUtil.extractUsername (jwtAccessToken);
+        String username = jwtService.extractUsername (jwtAccessToken);
         UserDetails userDetails = userDetailsService.loadUserByUsername (username);
         
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken (userDetails, null, userDetails.getAuthorities ());

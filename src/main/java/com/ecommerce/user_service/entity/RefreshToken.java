@@ -23,8 +23,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @EqualsAndHashCode
 @Entity
-@Table (name = "refresh_tokens")
-public class RefreshTokenEntity
+@Table (name = "refresh_token")
+public class RefreshToken
 {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)

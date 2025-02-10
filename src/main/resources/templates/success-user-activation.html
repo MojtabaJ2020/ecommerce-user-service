@@ -1,0 +1,10 @@
+<html>
+<head>
+    <link rel="stylesheet" th:href="@{/css/user-activation-page.css}">
+</head>
+<body>
+<h1 th:text="${message} ?: 'Activation Successful'"></h1>
+
+<a th:href="${login_link}" th:text="#{user.click.for.login}"></a>
+</body>
+</html>

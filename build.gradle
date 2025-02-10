@@ -31,6 +31,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'io.micrometer:micrometer-registry-prometheus:1.14.3'
 	implementation 'org.springframework.security:spring-security-oauth2-client:6.4.2'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -57,7 +58,9 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-oauth2-jose:6.4.2'
 	
 	implementation 'org.slf4j:slf4j-api:2.0.16'
+	implementation 'com.google.guava:guava:33.4.0-jre'
 	testImplementation 'ch.qos.logback:logback-classic:1.5.16'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2'
 	
 	
 }

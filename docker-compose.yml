@@ -1,8 +1,9 @@
 version: "3.9"
 
 services:
-  config-server:
-    image: mojtaba2422/ecommerce-config-server:latest
+  user-service:
+    image: mojtaba2422/ecommerce-user-service:latest
+    # build: .
     container_name: ecommerce-user-service
     ports:
       - "4000:4000"
@@ -16,6 +17,10 @@ services:
       - DB_HOST=ecommerce-postgres-server
       - DB_USERNAME=postgres
       - DB_PASSWORD=password
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=587
+      - MAIL_USER_NAME=test@gmail.com
+      - MAIL_PASSWORD=xxxx xxxx xxxx xxxx
     networks:
       - ecommerce-network
 networks:
